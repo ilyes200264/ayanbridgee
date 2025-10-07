@@ -145,7 +145,7 @@ export const PDFUploadComponent: React.FC<PDFUploadComponentProps> = ({
                       </p>
                     </div>
                     <a
-                      href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'}/file/${file.fileName}`}
+                      href={`${(import.meta.env.VITE_API_BASE_URL as string) || (import.meta.env.DEV ? 'http://localhost:3001/api' : '')}/file/${file.fileName}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 text-sm"

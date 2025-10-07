@@ -1,4 +1,9 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = (() => {
+  const envUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+  if (envUrl) return envUrl;
+  if (import.meta.env.DEV) return 'http://localhost:3001/api';
+  throw new Error('VITE_API_BASE_URL is not configured for production');
+})();
 const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '30000');
 
 export interface UploadResponse {
