@@ -68,7 +68,7 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(true);
   const navigate = useNavigate();
 
   return (
@@ -207,7 +207,6 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({
                   className="custom-checkbox mt-1" 
                   checked={acceptTerms}
                   onChange={(e) => setAcceptTerms(e.target.checked)}
-                  required
                 />
                 <label htmlFor="acceptTerms" className="text-foreground/90 leading-relaxed">
                   J'accepte les <a href="#" className="text-violet-400 hover:underline">conditions d'utilisation</a> et la <a href="#" className="text-violet-400 hover:underline">politique de confidentialité</a>
@@ -223,7 +222,7 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({
               <button 
                 type="submit" 
                 className="animate-element animate-delay-550 w-full rounded-xl bg-primary py-3 font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!acceptTerms || isLoading}
+                disabled={isLoading}
               >
                 {isLoading ? 'Création en cours...' : 'Créer mon compte'}
               </button>
