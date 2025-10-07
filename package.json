@@ -1,0 +1,49 @@
+{
+  "name": "ayanbridge",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npx vite",
+    "build": "vite build",
+    "lint": "npx eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "npx eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0 --fix",
+    "preview": "npx vite preview",
+    "test": "echo \"No tests specified\" && exit 0",
+    "test:watch": "echo \"No tests specified\" && exit 0",
+    "test:coverage": "echo \"No tests specified\" && exit 0",
+    "typecheck": "npx tsc --noEmit",
+    "analyze": "npm run build && npx vite-bundle-analyzer dist/assets/*.js"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "@react-navigation/native": "^7.1.11",
+    "class-variance-authority": "^0.7.1",
+    "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.0",
+    "lucide-react": "^0.525.0",
+    "motion": "^12.23.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-intersection-observer": "^9.16.0",
+    "react-markdown": "^9.1.0",
+    "react-router-dom": "^7.6.3",
+    "snyk": "^1.1298.1",
+    "vite": "^6.3.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "autoprefixer": "^10.4.21"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1"
+  }
+}
