@@ -65,10 +65,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (parsed && parsed.role) existingRole = parsed.role;
         } catch {}
       }
+      const saved = localStorage.getItem('user');
+      let persistedName: string | undefined;
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.name) persistedName = parsed.name as string;
+        } catch {}
+      }
+      const fallbackName = email.split('@')[0] || 'Utilisateur';
       const userData: User = {
         id: '1',
         email,
-        name: 'Achref Arabi',
+        name: persistedName || fallbackName,
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
         role: existingRole
       };
@@ -115,10 +124,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock user data - replace with actual user data from Google
+      // In a real app, you'll get email/name from Google provider
+      const googleEmail = 'user@gmail.com';
+      const googleName = 'Google User';
       const userData: User = {
         id: '1',
-        email: 'achref@ayanbridge.com',
-        name: 'Achref Arabi',
+        email: googleEmail,
+        name: googleName,
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
         role: undefined
       };
