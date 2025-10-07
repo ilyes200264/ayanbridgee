@@ -15,7 +15,14 @@ export default async function handler(req, res) {
       .from('prompts')
       .select('status, created_at')
       .gte('created_at', twentyFourHoursAgo.toISOString());
-    if (e1) throw e1;
+    if (e1) {
+      const msg = (e1.message || '').toLowerCase();
+      if (msg.includes('does not exist') || msg.includes('relation')) {
+        res.json({ success: true, data: { total: 0, last24Hours: 0, pending: 0, processing: 0, completed: 0, failed: 0, active: 0 } });
+        return;
+      }
+      throw e1;
+    }
 
     const { data: all, error: e2 } = await supabase
       .from('prompts')

@@ -19,6 +19,11 @@ export default async function handler(req, res) {
       .order('created_at', { ascending: false });
 
     if (error) {
+      const msg = (error.message || '').toLowerCase();
+      if (msg.includes('does not exist') || msg.includes('relation')) {
+        res.json({ success: true, data: { prompts: [], count: 0, activeCount: 0 } });
+        return;
+      }
       res.status(500).json({ error: 'Failed to fetch active generations', message: error.message });
       return;
     }
