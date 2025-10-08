@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
 import type { UserRole } from '../types/index';
 
 interface User {
@@ -39,54 +40,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-      // Vérifie si le rôle est bien défini (persisté)
-      setUser(parsedUser);
-    }
-    setIsLoading(false);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+          avatar: session.user.user_metadata?.avatar_url,
+        });
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+          avatar: session.user.user_metadata?.avatar_url,
+        });
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      // Simulate API call - replace with actual authentication
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data - replace with actual user data from API
-      // Récupère le rôle existant si déjà enregistré
-      let existingRole: UserRole | undefined = undefined;
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        try {
-          const parsed = JSON.parse(savedUser);
-          if (parsed && parsed.role) existingRole = parsed.role;
-        } catch {}
-      }
-      const saved = localStorage.getItem('user');
-      let persistedName: string | undefined;
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed && parsed.name) persistedName = parsed.name as string;
-        } catch {}
-      }
-      const fallbackName = email.split('@')[0] || 'Utilisateur';
-      const userData: User = {
-        id: '1',
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        name: persistedName || fallbackName,
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-        role: existingRole
-      };
-      
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('isAuthenticated', 'true');
-    } catch (error) {
-      throw new Error('Login failed');
+        password,
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      throw new Error(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -95,23 +90,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signup = async (email: string, password: string, name: string): Promise<void> => {
     setIsLoading(true);
     try {
-      // Simulate API call - replace with actual registration
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data - replace with actual user data from API
-      const userData: User = {
-        id: '1',
+      const { data, error } = await supabase.auth.signUp({
         email,
-        name,
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-        role: undefined
-      };
-      
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('isAuthenticated', 'true');
-    } catch (error) {
-      throw new Error('Signup failed');
+        password,
+        options: {
+          data: {
+            name: name
+          }
+        }
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      throw new Error(error.message || 'Signup failed');
     } finally {
       setIsLoading(false);
     }
@@ -120,26 +111,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const googleAuth = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      // Simulate Google OAuth - replace with actual Google authentication
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data - replace with actual user data from Google
-      // In a real app, you'll get email/name from Google provider
-      const googleEmail = 'user@gmail.com';
-      const googleName = 'Google User';
-      const userData: User = {
-        id: '1',
-        email: googleEmail,
-        name: googleName,
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-        role: undefined
-      };
-      
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('isAuthenticated', 'true');
-    } catch (error) {
-      throw new Error('Google authentication failed');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      throw new Error(error.message || 'Google authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -150,23 +128,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     setIsLoading(true);
     try {
-      // Simulate API call to update user role
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const updatedUser = { ...user, role };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    } catch (error) {
-      throw new Error('Failed to update user role');
+      // Update user metadata
+      const { error } = await supabase.auth.updateUser({
+        data: { role }
+      });
+
+      if (error) throw error;
+
+      // Update local state
+      setUser({ ...user, role });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to update user role');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('isAuthenticated');
   };
 
   const value: AuthContextType = {
@@ -181,4 +161,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}; 
+};
